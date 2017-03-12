@@ -67,7 +67,7 @@ def tf_model_train(*args, **kwargs):
 
 
 def model_train(sess, x, y, predictions, X_train, Y_train, save=False,
-                predictions_adv=None, evaluate=None, verbose=True, args=None):
+                predictions_adv=None, evaluate=None, verbose=True, args=None, model_loss_fn = None, reg = 0):
     """
     Train a TF graph
     :param sess: TF session to use when training the graph
@@ -98,10 +98,12 @@ def model_train(sess, x, y, predictions, X_train, Y_train, save=False,
         assert args.filename, "Filename for save was not given in args dict"
 
     # Define loss
-    loss = model_loss(y, predictions)
+    if model_loss_fn == None:
+        model_loss_fn = lambda pred: model_loss(y, pred)
+    loss = model_loss_fn(predictions)
     if predictions_adv is not None:
-        loss = (loss + model_loss(y, predictions_adv)) / 2
-
+        loss = (loss + model_loss_fn(predictions_adv)) / 2
+    loss = loss + reg
     train_step = tf.train.AdadeltaOptimizer(learning_rate=args.learning_rate,
                                             rho=0.95,
                                             epsilon=1e-08).minimize(loss)
