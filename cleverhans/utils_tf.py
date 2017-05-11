@@ -49,7 +49,8 @@ def model_loss(y, model, mean=True):
 
     op = model.op
     if "softmax" in str(op).lower():
-        logits, = op.inputs
+        #logits, = op.inputs
+        logits = op.inputs[0]
     else:
         logits = model
 
@@ -179,7 +180,10 @@ def model_eval(sess, x, y, model, X_test, Y_test, args=None):
     assert args.batch_size, "Batch size was not given in args dict"
 
     # Define symbol for accuracy
-    acc_value = keras.metrics.categorical_accuracy(y, model)
+    #print(y.get_shape())
+    #print(model.get_shape())
+    acc_value = tf.reduce_mean(keras.metrics.categorical_accuracy(y, model))
+    #print(acc_value.get_shape())
 
     # Init result var
     accuracy = 0.0
@@ -202,10 +206,11 @@ def model_eval(sess, x, y, model, X_test, Y_test, args=None):
 
             # The last batch may be smaller than all others, so we need to
             # account for variable batch size here
+            #print(accuracy)
             accuracy += cur_batch_size * acc_value.eval(
                 feed_dict={x: X_test[start:end],
-                           y: Y_test[start:end],
-                           keras.backend.learning_phase(): 0})
+                           y: Y_test[start:end]})#,
+                           #keras.backend.learning_phase(): 0})
         assert end >= len(X_test)
 
         # Divide by number of examples to get final value

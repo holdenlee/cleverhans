@@ -31,7 +31,8 @@ def fgsm(x, predictions, eps, clip_min=None, clip_max=None):
                     value for components of the example returned
     :return: a tensor for the adversarial example
     """
-
+    print('in fgsm')
+    print(x)
     # Compute loss
     y = tf.to_float(
         tf.equal(predictions, tf.reduce_max(predictions, 1, keep_dims=True)))
@@ -40,20 +41,20 @@ def fgsm(x, predictions, eps, clip_min=None, clip_max=None):
 
     # Define gradient of loss wrt input
     grad, = tf.gradients(loss, x)
-
+    print(grad)
     # Take sign of gradient
     signed_grad = tf.sign(grad)
 
     # Multiply by constant epsilon
     scaled_signed_grad = eps * signed_grad
-
+    print(scaled_signed_grad)
     # Add perturbation to original example to obtain adversarial example
     adv_x = tf.stop_gradient(x + scaled_signed_grad)
-
+    print(adv_x)
     # If clipping is needed, reset all values outside of [clip_min, clip_max]
     if (clip_min is not None) and (clip_max is not None):
         adv_x = tf.clip_by_value(adv_x, clip_min, clip_max)
-
+    print(adv_x)
     return adv_x
 
 
